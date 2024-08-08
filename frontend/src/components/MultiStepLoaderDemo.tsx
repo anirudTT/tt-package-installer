@@ -17,15 +17,17 @@ const steps: Step[] = [
   { text: "Verify hugepages setup" },
   { text: "Install tt-smi using pip3" },
   { text: "Verify tt-smi installation" },
+  { text: "Install tt-kmd using dkms" },
   { text: "Install tt-flash using pip" },
   { text: "Flash firmware using tt-flash" },
-  { text: "Install tt-kmd using dkms" },
+ 
 ];
 
 export function MultiStepLoaderDemo(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false);
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [selectedStep, setSelectedStep] = useState<number>(0);
+  const [runAsSudo, setRunAsSudo] = useState<boolean>(false);
 
   useEffect(() => {
     const socket: Socket = io("http://localhost:4000", {
@@ -36,15 +38,9 @@ export function MultiStepLoaderDemo(): JSX.Element {
       console.log("Connected to server");
     });
 
-    socket.on(
-      "progress",
-      (data: { step: number; status: "running" | "completed" }) => {
-        setLogMessages((prev) => [
-          ...prev,
-          `Step ${data.step + 1}: ${data.status}`,
-        ]);
-      }
-    );
+    socket.on("progress", (data: { step: number; status: "running" | "completed" }) => {
+      setLogMessages((prev) => [...prev, `Step ${data.step + 1}: ${data.status}`]);
+    });
 
     socket.on("complete", (message: string) => {
       setLogMessages((prev) => [...prev, message]);
@@ -54,10 +50,7 @@ export function MultiStepLoaderDemo(): JSX.Element {
 
     socket.on("error", (data: { step: number; error: string }) => {
       console.error(data.error);
-      setLogMessages((prev) => [
-        ...prev,
-        `Step ${data.step + 1} failed: ${data.error}`,
-      ]);
+      setLogMessages((prev) => [...prev, `Step ${data.step + 1} failed: ${data.error}`]);
       setLoading(false);
     });
 
@@ -68,8 +61,8 @@ export function MultiStepLoaderDemo(): JSX.Element {
 
   const startLoading = (): void => {
     setLoading(true);
-    setLogMessages([]);
-    axios.get("http://localhost:4000/api/start-all").catch((error) => {
+    setLogMessages((prev) => [...prev, "Got request to run all steps"]);
+    axios.get(`http://localhost:4000/api/start-all?sudo=${runAsSudo}`).catch((error) => {
       console.error("Error starting script:", error);
       setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
       setLoading(false);
@@ -78,14 +71,12 @@ export function MultiStepLoaderDemo(): JSX.Element {
 
   const startSpecificStep = (index: number): void => {
     setLoading(true);
-    setLogMessages([]);
-    axios
-      .get(`http://localhost:4000/api/start-step/${index}`)
-      .catch((error) => {
-        console.error("Error starting script:", error);
-        setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
-        setLoading(false);
-      });
+    setLogMessages((prev) => [...prev, `Got request to run step ${index + 1}: ${steps[index].text}`]);
+    axios.get(`http://localhost:4000/api/start-step/${index}?sudo=${runAsSudo}`).catch((error) => {
+      console.error("Error starting script:", error);
+      setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
+      setLoading(false);
+    });
   };
 
   return (
@@ -96,10 +87,7 @@ export function MultiStepLoaderDemo(): JSX.Element {
             <button
               onClick={startLoading}
               className="bg-[#39C3EF] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-8 flex items-center justify-center mb-4"
-              style={{
-                boxShadow:
-                  "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
-              }}
+              style={{ boxShadow: "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset" }}
             >
               Click to load all steps
             </button>
@@ -107,10 +95,7 @@ export function MultiStepLoaderDemo(): JSX.Element {
               value={selectedStep}
               onChange={(e) => setSelectedStep(Number(e.target.value))}
               className="bg-[#39C3EF] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-8 flex items-center justify-center mb-4"
-              style={{
-                boxShadow:
-                  "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
-              }}
+              style={{ boxShadow: "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset" }}
             >
               {steps.map((step, index) => (
                 <option key={index} value={index}>
@@ -121,13 +106,19 @@ export function MultiStepLoaderDemo(): JSX.Element {
             <button
               onClick={() => startSpecificStep(selectedStep)}
               className="bg-[#39C3EF] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-8 flex items-center justify-center mb-4"
-              style={{
-                boxShadow:
-                  "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
-              }}
+              style={{ boxShadow: "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset" }}
             >
               Start Selected Step
             </button>
+            <div className="flex items-center mt-4">
+              <input
+                type="checkbox"
+                checked={runAsSudo}
+                onChange={() => setRunAsSudo(!runAsSudo)}
+                className="mr-2"
+              />
+              <label>Run as sudo</label>
+            </div>
           </>
         )}
         {loading && (
