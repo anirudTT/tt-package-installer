@@ -17,23 +17,25 @@ const steps = [
   { script: path.join(stepsDir, "step11.sh") },
 ];
 
-function executeStep(index, socket) {
+function executeStep(index, socket, useSudo) {
   return new Promise((resolve, reject) => {
     const step = steps[index];
     if (!step) {
       return reject(new Error("Step not found"));
     }
 
+    const command = useSudo ? `sudo sh ${step.script}` : `sh ${step.script}`;
+
     socket.emit("progress", { step: index, status: "running" });
 
-    exec(`sh ${step.script}`, (error, stdout, stderr) => {
+    exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error executing ${step.script}:`, stderr);
+        console.error(`Error executing ${step.script}: ${stderr}`);
         socket.emit("error", { step: index, error: stderr });
         return reject(error);
       }
 
-      console.log(`Completed ${step.script}:`, stdout);
+      console.log(`Completed ${step.script}: ${stdout}`);
       socket.emit("progress", { step: index, status: "completed" });
       resolve();
     });

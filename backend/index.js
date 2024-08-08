@@ -2,6 +2,8 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
+const fs = require("fs");
+const { exec } = require("child_process");
 const { executeStep, steps } = require("./stepExecutor");
 
 const app = express();
@@ -23,11 +25,23 @@ io.on("connection", (socket) => {
   });
 });
 
+function executeCommand(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(`Error executing command: ${stderr}`);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
 // Endpoint to start all steps
 app.get("/api/start-all", (req, res) => {
   steps
     .reduce((promise, step, index) => {
-      return promise.then(() => executeStep(index, io));
+      return promise.then(() => executeStep(index, io, false)); // No sudo required
     }, Promise.resolve())
     .then(() => {
       io.emit("complete", "All steps completed");
@@ -46,7 +60,7 @@ app.get("/api/start-step/:index", (req, res) => {
     return res.status(400).send("Invalid step index");
   }
 
-  executeStep(index, io)
+  executeStep(index, io, false) // No sudo required
     .then(() => {
       res.send(`Step ${index} completed`);
     })
@@ -55,6 +69,19 @@ app.get("/api/start-step/:index", (req, res) => {
     });
 });
 
-server.listen(4000, () => {
-  console.log("Server is running on port 4000");
-});
+// Function to kill any process running on a given port
+function killPort(port) {
+  const command = `lsof -ti:${port} | xargs kill -9`;
+  return executeCommand(command);
+}
+
+// Start the server after killing any process on port 4000
+killPort(4000)
+  .then(() => {
+    server.listen(4000, () => {
+      console.log("Server is running on port 4000");
+    });
+  })
+  .catch((error) => {
+    console.error(error);
+  });
