@@ -28,6 +28,8 @@ export function MultiStepLoaderDemo(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingStates, setLoadingStates] =
     useState<LoadingState[]>(initialLoadingStates);
+  const [logMessages, setLogMessages] = useState<string[]>([]);
+  const [selectedStep, setSelectedStep] = useState<number>(0);
 
   useEffect(() => {
     const socket: Socket = io("http://localhost:4000", {
@@ -53,6 +55,10 @@ export function MultiStepLoaderDemo(): JSX.Element {
           });
           return updated;
         });
+        setLogMessages((prev) => [
+          ...prev,
+          `Step ${data.step + 1}: ${data.status}`,
+        ]);
       }
     );
 
@@ -67,6 +73,7 @@ export function MultiStepLoaderDemo(): JSX.Element {
         });
         return updated;
       });
+      setLogMessages((prev) => [...prev, message]);
       console.log(message);
       setLoading(false);
     });
@@ -83,6 +90,10 @@ export function MultiStepLoaderDemo(): JSX.Element {
         });
         return updated;
       });
+      setLogMessages((prev) => [
+        ...prev,
+        `Step ${data.step + 1} failed: ${data.error}`,
+      ]);
       setLoading(false);
     });
 
@@ -100,8 +111,10 @@ export function MultiStepLoaderDemo(): JSX.Element {
       }));
       return updated;
     });
+    setLogMessages([]);
     axios.get("http://localhost:4000/api/start-all").catch((error) => {
       console.error("Error starting script:", error);
+      setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
       setLoading(false);
     });
   };
@@ -115,10 +128,12 @@ export function MultiStepLoaderDemo(): JSX.Element {
       }));
       return updated;
     });
+    setLogMessages([]);
     axios
       .get(`http://localhost:4000/api/start-step/${index}`)
       .catch((error) => {
         console.error("Error starting script:", error);
+        setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
         setLoading(false);
       });
   };
@@ -140,19 +155,31 @@ export function MultiStepLoaderDemo(): JSX.Element {
             >
               Click to load all steps
             </button>
-            {loadingStates.map((state, index) => (
-              <button
-                key={index}
-                onClick={() => startSpecificStep(index)}
-                className="bg-[#39C3EF] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-8 flex items-center justify-center mt-2"
-                style={{
-                  boxShadow:
-                    "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
-                }}
-              >
-                {`Start ${state.text}`}
-              </button>
-            ))}
+            <select
+              value={selectedStep}
+              onChange={(e) => setSelectedStep(Number(e.target.value))}
+              className="bg-[#39C3EF] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-8 flex items-center justify-center mb-4"
+              style={{
+                boxShadow:
+                  "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
+              }}
+            >
+              {loadingStates.map((state, index) => (
+                <option key={index} value={index}>
+                  {`Start ${state.text}`}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => startSpecificStep(selectedStep)}
+              className="bg-[#39C3EF] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-8 flex items-center justify-center mb-4"
+              style={{
+                boxShadow:
+                  "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
+              }}
+            >
+              Start Selected Step
+            </button>
           </>
         )}
         {loading && (
@@ -163,6 +190,17 @@ export function MultiStepLoaderDemo(): JSX.Element {
             <IconSquareRoundedX className="h-10 w-10" />
           </button>
         )}
+      </div>
+
+      <div className="w-full mt-4">
+        <h2 className="text-lg font-semibold mb-2">Log Messages</h2>
+        <div className="bg-gray-100 p-4 rounded-lg h-40 overflow-y-auto">
+          {logMessages.map((msg, index) => (
+            <p key={index} className="text-sm text-gray-800">
+              {msg}
+            </p>
+          ))}
+        </div>
       </div>
     </div>
   );
