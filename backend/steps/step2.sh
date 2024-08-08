@@ -1,9 +1,27 @@
 #!/bin/bash
 
-# Step 2: Download and install specific packages
-echo "Step 2: Download and install specific packages"
-wget http://mirrors.kernel.org/ubuntu/pool/main/y/yaml-cpp/libyaml-cpp-dev_0.6.2-4ubuntu1_amd64.deb
-wget http://mirrors.kernel.org/ubuntu/pool/main/y/yaml-cpp/libyaml-cpp0.6_0.6.2-4ubuntu1_amd64.deb
-dpkg -i libyaml-cpp-dev_0.6.2-4ubuntu1_amd64.deb libyaml-cpp0.6_0.6.2-4ubuntu1_amd64.deb
-rm libyaml-cpp-dev_0.6.2-4ubuntu1_amd64.deb libyaml-cpp0.6_0.6.2-4ubuntu1_amd64.deb
-apt install -y dkms
+# Function to log messages
+log() {
+    echo "$1"
+    echo "$1" >> ~/step2.log
+}
+
+# Step 2: Download and install YAML-CPP
+log "Step 2: Download and install YAML-CPP"
+
+log "Downloading libyaml-cpp-dev..."
+wget http://mirrors.kernel.org/ubuntu/pool/main/y/yaml-cpp/libyaml-cpp-dev_0.6.2-4ubuntu1_amd64.deb || { log "Failed to download libyaml-cpp-dev"; exit 1; }
+
+log "Downloading libyaml-cpp0.6..."
+wget http://mirrors.kernel.org/ubuntu/pool/main/y/yaml-cpp/libyaml-cpp0.6_0.6.2-4ubuntu1_amd64.deb || { log "Failed to download libyaml-cpp0.6"; exit 1; }
+
+log "Installing YAML-CPP packages..."
+sudo dpkg -i libyaml-cpp-dev_0.6.2-4ubuntu1_amd64.deb libyaml-cpp0.6_0.6.2-4ubuntu1_amd64.deb || { log "Failed to install YAML-CPP packages"; exit 1; }
+
+log "Removing downloaded files..."
+rm libyaml-cpp-dev_0.6.2-4ubuntu1_amd64.deb libyaml-cpp0.6_0.6.2-4ubuntu1_amd64.deb || { log "Failed to remove downloaded files"; exit 1; }
+
+log "Installing dkms..."
+sudo apt install -y dkms || { log "Failed to install dkms"; exit 1; }
+
+log "Step 2 completed successfully."
