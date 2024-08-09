@@ -18,13 +18,11 @@ const steps: Step[] = [
   { text: "Install Packages", status: "pending" },
   { text: "Install Rust", status: "pending" },
   { text: "Clone TT repositories", status: "pending" },
-  { text: "Set Up HugePages", status: "pending" },
-  { text: "Verify hugepages", status: "pending" },
-  { text: "Install tt-smi", status: "pending" },
-  { text: "Verify tt-smi installation", status: "pending" },
-  { text: "Install tt-kmd ", status: "pending" },
-  { text: "Install tt-flash ", status: "pending" },
+  { text: "Set Up and Verify HugePages", status: "pending" },
+  { text: "Install tt-kmd", status: "pending" },
+  { text: "Install tt-flash", status: "pending" },
   { text: "Flash tt firmware", status: "pending" },
+  { text: "Install and Verify tt-smi", status: "pending" },
 ];
 
 export function MultiStepLoaderDemo(): JSX.Element {

@@ -13,11 +13,15 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-      - /var/run/docker.sock:/var/run/docker.sock
+      # - /var/run/docker.sock:/var/run/docker.sock
+    devices:
+      #   # mount all tenstorrent devices to backend container
+      - /dev/tenstorrent:/dev/tenstorrent
     environment:
       - NODE_ENV=development
       - SOCKET_PORT=4000 # Example env var if needed for socket configuration
     command: npm start
+    privileged: true # This grants the container extended privileges
 
   tt-installer-frontend:
     container_name: tt_installer_frontend

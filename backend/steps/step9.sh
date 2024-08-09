@@ -1,11 +1,10 @@
-
 #!/bin/bash
 
-# Step 9: Install tt-kmd using dkms
-echo "Step 9: Install tt-kmd using dkms"
+# Step 9: Install tt-smi using pip3
+echo "Step 9: Install tt-smi using pip3"
 
-# Define the directory where the tt-kmd repository is located
-directory="/tmp/tenstorrent_repos/tt-kmd"
+# Define the directory where the tt-smi repository is located
+directory="/tmp/tenstorrent_repos/tt-smi"
 
 # Check if the directory exists
 if [ -d "$directory" ]; then
@@ -16,23 +15,17 @@ else
     exit 1
 fi
 
-# Get the current kernel version
-kernel_version=$(uname -r)
+# Install tt-smi using pip3
+pip3 install .
 
-# Install the necessary kernel headers
-echo "Installing kernel headers for $kernel_version..."
-sudo apt-get update
-sudo apt-get install -y "linux-headers-$kernel_version"
 
-# Check if the DKMS module is already added
-if dkms status | grep -q "tenstorrent/1.28"; then
-    echo "Skipping DKMS add for tenstorrent-1.28 as it already exists."
+# Step 9: Verify tt-smi installation
+echo "Step 9: Verify tt-smi installation"
+
+# Check if tt-smi is installed and available in the PATH
+if command -v tt-smi &> /dev/null; then
+    echo "tt-smi command found and working"
 else
-    sudo dkms add .
+    echo "tt-smi command not found. Please check the installation."
+    exit 1
 fi
-
-# Install the DKMS module
-sudo dkms install tenstorrent/1.28 || echo "Skipping DKMS install for tenstorrent-1.28 as it already exists."
-
-# Load the module
-sudo modprobe tenstorrent || echo "Failed to load tenstorrent module. Please check if the module was installed correctly."
