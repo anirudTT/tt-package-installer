@@ -4,9 +4,8 @@ import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
-import { Card } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
-import { Separator } from "./ui/separator";
 
 interface Step {
   text: string;
@@ -87,29 +86,28 @@ export function MultiStepLoaderDemo(): JSX.Element {
   return (
     <div className="flex h-[70vh] w-full">
       {/* Sidebar with Scroll Area */}
-      <ScrollArea className="w-1/4 bg-gray-800 text-white p-4">
+      <ScrollArea className="w-1/3 bg-gray-100 dark:bg-[#1E1E1E] text-black dark:text-white p-6 rounded-lg shadow-neumorphism-light dark:shadow-neumorphism-dark">
         <h2 className="text-lg font-semibold mb-4">Steps</h2>
         <ul className="space-y-2">
           {steps.map((step, index) => (
             <li
               key={index}
               onClick={() => setSelectedStep(index)}
-              className={`flex items-center cursor-pointer rounded-lg transition duration-300 ${
-                selectedStep === index ? "text-blue-500" : "text-gray-400"
+              className={`flex items-center space-x-3 cursor-pointer rounded-full transition duration-300 p-2 ${
+                selectedStep === index ? "text-blue-500 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
               }`}
             >
               <span
-                className={`h-2 w-2 rounded-full ${
+                className={`h-3 w-3 rounded-full ${
                   step.status === "completed"
                     ? "bg-green-500"
                     : step.status === "running"
                     ? "bg-yellow-500"
                     : selectedStep === index
-                    ? "bg-blue-500"
-                    : "bg-gray-400"
+                    ? "bg-blue-500 dark:bg-blue-400"
+                    : "bg-gray-500 dark:bg-gray-400"
                 }`}
               />
-              <Separator className={`mx-2 h-px flex-1 ${selectedStep > index ? "bg-green-500" : "bg-gray-400"}`} />
               <span>{step.text}</span>
             </li>
           ))}
@@ -117,56 +115,58 @@ export function MultiStepLoaderDemo(): JSX.Element {
       </ScrollArea>
 
       {/* Main Content Area */}
-      <div className="w-3/4 bg-gray-900 text-white p-6 flex flex-col justify-between">
-        <div>
-          <Card className="mb-4 p-4">
-            <h3 className="text-xl font-semibold mb-2">{steps[selectedStep].text}</h3>
-            <p>Details and instructions for the selected step will go here.</p>
-          </Card>
+      <Card className="w-2/3 bg-white dark:bg-[#141414] text-black dark:text-white p-6 shadow-neumorphism-light dark:shadow-neumorphism-dark">
+        <CardContent className="flex flex-col justify-between">
+          <div>
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold mb-2">{steps[selectedStep].text}</h3>
+              <p>Details and instructions for the selected step will go here.</p>
+            </div>
 
-          <div className="flex items-center mt-4">
-            <Checkbox
-              checked={runAsSudo}
-              onCheckedChange={(checked) => setRunAsSudo(checked === true)}
-              className="mr-2"
-            />
-            <label>Run as sudo</label>
-          </div>
+            <div className="flex items-center mt-4">
+              <Checkbox
+                checked={runAsSudo}
+                onCheckedChange={(checked) => setRunAsSudo(checked === true)}
+                className="mr-2 rounded-full"
+              />
+              <label>Run as sudo</label>
+            </div>
 
-          <div className="mt-4">
-            <h2 className="text-lg font-semibold mb-2">Log Messages</h2>
-            <div className="bg-gray-700 p-4 rounded-lg h-40 overflow-y-auto">
-              {logMessages.map((msg, index) => (
-                <p key={index} className="text-sm">
-                  {msg}
-                </p>
-              ))}
+            <div className="mt-4">
+              <h2 className="text-lg font-semibold mb-2">Log Messages</h2>
+              <div className="bg-gray-100 dark:bg-[#1E1E1E] p-4 rounded-lg h-40 overflow-y-auto shadow-neumorphism-light dark:shadow-neumorphism-dark">
+                {logMessages.map((msg, index) => (
+                  <p key={index} className="text-sm">
+                    {msg}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end space-x-4 mt-6">
-          {steps[selectedStep].status === "completed" ? (
-            <Button
-              onClick={continueToNextStep}
-              variant="default"
-              className="mb-4"
-              disabled={selectedStep >= steps.length - 1}
-            >
-              Continue to Next Step
-            </Button>
-          ) : (
-            <Button
-              onClick={startSpecificStep}
-              variant="default"
-              className="mb-4"
-              disabled={loading || steps[selectedStep].status === "running"}
-            >
-              Run This Step
-            </Button>
-          )}
-        </div>
-      </div>
+          <div className="flex justify-end space-x-4 mt-6">
+            {steps[selectedStep].status === "completed" ? (
+              <Button
+                onClick={continueToNextStep}
+                variant="default"
+                className="mb-4 bg-blue-500 dark:bg-blue-400 text-white dark:text-black rounded-full shadow-neumorphism-light dark:shadow-neumorphism-dark"
+                disabled={selectedStep >= steps.length - 1}
+              >
+                Continue to Next Step
+              </Button>
+            ) : (
+              <Button
+                onClick={startSpecificStep}
+                variant="default"
+                className="mb-4 bg-blue-500 dark:bg-blue-400 text-white dark:text-black rounded-full shadow-neumorphism-light dark:shadow-neumorphism-dark"
+                disabled={loading || steps[selectedStep].status === "running"}
+              >
+                Run This Step
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
