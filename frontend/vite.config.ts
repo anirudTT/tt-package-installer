@@ -5,12 +5,13 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000, // Specify the port you want Vite to use
+    host: "0.0.0.0", // Make Vite accessible from the host machine
+    port: 3000, // The port Vite will use
     proxy: {
       "/api": {
-        target: "http://backend:4000",
+        target: "http://tt-installer-backend:4000", // Proxy API requests to the backend
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path, // Preserve the `/api` prefix
       },
     },
   },

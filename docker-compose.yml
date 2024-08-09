@@ -1,14 +1,43 @@
-version: "3.8"
-
 services:
-  backend:
-    build: ./backend
+  tt-installer-backend:
+    container_name: tt_installer_backend
+    hostname: tt-installer-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: tt_installer_backend_image:latest
     ports:
       - "4000:4000"
+    networks:
+      - app_network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_ENV=development
+      - SOCKET_PORT=4000 # Example env var if needed for socket configuration
+    command: npm start
 
-  frontend:
-    build: ./frontend
+  tt-installer-frontend:
+    container_name: tt_installer_frontend
+    hostname: tt-installer-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: tt_installer_frontend_image:latest
     ports:
-      - "3000:80"
-    depends_on:
-      - backend
+      - "3000:3000"
+    networks:
+      - app_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_BACKEND_URL=http://tt-installer-backend:4000 # Use the backend hostname and port
+    command: bash -c "npm i && npm run dev"
+
+networks:
+  app_network:
+    driver: bridge

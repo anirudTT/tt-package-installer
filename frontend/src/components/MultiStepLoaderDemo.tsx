@@ -42,10 +42,16 @@ export function MultiStepLoaderDemo(): JSX.Element {
       console.log("Connected to server");
     });
 
-    socket.on("progress", (data: { step: number; status: "running" | "completed" }) => {
-      setLogMessages((prev) => [...prev, `Step ${data.step + 1}: ${data.status}`]);
-      steps[data.step].status = data.status;
-    });
+    socket.on(
+      "progress",
+      (data: { step: number; status: "running" | "completed" }) => {
+        setLogMessages((prev) => [
+          ...prev,
+          `Step ${data.step + 1}: ${data.status}`,
+        ]);
+        steps[data.step].status = data.status;
+      }
+    );
 
     socket.on("complete", (message: string) => {
       setLogMessages((prev) => [...prev, message]);
@@ -58,7 +64,10 @@ export function MultiStepLoaderDemo(): JSX.Element {
 
     socket.on("error", (data: { step: number; error: string }) => {
       console.error(data.error);
-      setLogMessages((prev) => [...prev, `Step ${data.step + 1} failed: ${data.error}`]);
+      setLogMessages((prev) => [
+        ...prev,
+        `Step ${data.step + 1} failed: ${data.error}`,
+      ]);
       steps[data.step].status = "failed";
       setLoading(false);
     });
@@ -75,12 +84,19 @@ export function MultiStepLoaderDemo(): JSX.Element {
 
   const startSpecificStep = (): void => {
     setLoading(true);
-    setLogMessages((prev) => [...prev, `Got request to run step ${selectedStep + 1}: ${steps[selectedStep].text}`]);
-    axios.get(`http://localhost:4000/api/start-step/${selectedStep}?sudo=${runAsSudo}`).catch((error) => {
-      console.error("Error starting script:", error);
-      setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
-      setLoading(false);
-    });
+    setLogMessages((prev) => [
+      ...prev,
+      `Got request to run step ${selectedStep + 1}: ${
+        steps[selectedStep].text
+      }`,
+    ]);
+    axios
+      .get(`/api/start-step/${selectedStep}?sudo=${runAsSudo}`)
+      .catch((error) => {
+        console.error("Error starting script:", error);
+        setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
+        setLoading(false);
+      });
   };
 
   const continueToNextStep = (): void => {
@@ -110,7 +126,9 @@ export function MultiStepLoaderDemo(): JSX.Element {
               <li
                 onClick={() => handleStepChange(index)}
                 className={`flex items-center space-x-3 cursor-pointer rounded-full transition duration-300 p-2 ${
-                  selectedStep === index ? "text-blue-500 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+                  selectedStep === index
+                    ? "text-blue-500 dark:text-blue-400"
+                    : "text-gray-500 dark:text-gray-400"
                 } ${selectedStep !== index ? "opacity-50" : ""}`}
               >
                 <span
@@ -136,14 +154,16 @@ export function MultiStepLoaderDemo(): JSX.Element {
       <Card className="w-2/3 bg-white dark:bg-[#141414] text-black dark:text-white p-6 rounded-2xl shadow-neumorphism-light dark:shadow-neumorphism-dark flex flex-col justify-between">
         <CardContent className="flex-grow">
           <div className="mb-4">
-            <h3 className="text-xl font-semibold mb-2">{steps[selectedStep].text}</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              {steps[selectedStep].text}
+            </h3>
             <p>Details and instructions for the selected step will go here.</p>
           </div>
 
           <div className="flex items-center mt-4">
             <Checkbox
               checked={runAsSudo}
-              onCheckedChange={(checked) => setRunAsSudo(checked === true)}
+              onCheckedChange={(checked: boolean) => setRunAsSudo(checked)}
               className="mr-2 rounded-full"
             />
             <label>Run as sudo</label>

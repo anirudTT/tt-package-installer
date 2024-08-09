@@ -1,21 +1,11 @@
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
-const cors = require("cors");
-const fs = require("fs");
-const { exec } = require("child_process");
 const { executeStep, steps } = require("./stepExecutor");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:3000", // Replace with your frontend URL
-    methods: ["GET", "POST"],
-  },
-});
-
-app.use(cors());
+const io = socketIo(server);
 
 io.on("connection", (socket) => {
   console.log("New client connected");
@@ -24,18 +14,6 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
-
-function executeCommand(command) {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(`Error executing command: ${stderr}`);
-      } else {
-        resolve(stdout);
-      }
-    });
-  });
-}
 
 // Endpoint to start all steps
 app.get("/api/start-all", (req, res) => {
@@ -69,19 +47,7 @@ app.get("/api/start-step/:index", (req, res) => {
     });
 });
 
-// Function to kill any process running on a given port
-function killPort(port) {
-  const command = `lsof -ti:${port} | xargs kill -9`;
-  return executeCommand(command);
-}
-
-// Start the server after killing any process on port 4000
-killPort(4000)
-  .then(() => {
-    server.listen(4000, () => {
-      console.log("Server is running on port 4000");
-    });
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+// Start the server on port 4000
+server.listen(4000, "0.0.0.0", () => {
+  console.log("Server is running on port 4000");
+});

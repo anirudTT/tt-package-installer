@@ -8,11 +8,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the backend application code
+# Copy the rest of the frontend application code
 COPY . .
 
-# Expose the port that the backend service will run on
-EXPOSE 4000
+# Expose the port that the frontend development server will run on
+EXPOSE 3000
 
-# Define the command to run your backend application
-CMD ["npm", "start"]
+# Define the command to run your frontend development server
+CMD ["npm", "run", "dev"]
