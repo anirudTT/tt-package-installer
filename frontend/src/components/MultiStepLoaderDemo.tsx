@@ -133,52 +133,52 @@ export function MultiStepLoaderDemo(): JSX.Element {
       </div>
 
       {/* Main Content Area */}
-      <div className="w-3/4 bg-gray-900 text-white p-6">
-        <Card className="mb-4 p-4">
-          <h3 className="text-xl font-semibold mb-2">{steps[selectedStep].text}</h3>
-          <p>Details and instructions for the selected step will go here.</p>
-        </Card>
+      <div className="w-3/4 bg-gray-900 text-white p-6 flex flex-col justify-between">
+        <div>
+          <Card className="mb-4 p-4">
+            <h3 className="text-xl font-semibold mb-2">{steps[selectedStep].text}</h3>
+            <p>Details and instructions for the selected step will go here.</p>
+          </Card>
 
-        {!loading && (
-          <div className="flex flex-col items-start">
-            <Button
-              onClick={startSpecificStep}
-              variant="default"
-              className="mb-4"
-              disabled={steps[selectedStep].status === "completed"}
-            >
-              Run This Step
-            </Button>
+          <div className="flex items-center mt-4">
+            <Checkbox
+              checked={runAsSudo}
+              onCheckedChange={(checked) => setRunAsSudo(checked === true)}
+              className="mr-2"
+            />
+            <label>Run as sudo</label>
+          </div>
 
-            <Button
-              onClick={startSpecificStep}
-              variant="default"
-              className="mb-4"
-              disabled={selectedStep >= steps.length - 1 || loading}
-            >
-              Continue to Next Step
-            </Button>
-
-            <div className="flex items-center mt-4">
-              <Checkbox
-                checked={runAsSudo}
-                onCheckedChange={(checked) => setRunAsSudo(checked === true)}
-                className="mr-2"
-              />
-              <label>Run as sudo</label>
+          <div className="mt-4">
+            <h2 className="text-lg font-semibold mb-2">Log Messages</h2>
+            <div className="bg-gray-700 p-4 rounded-lg h-40 overflow-y-auto">
+              {logMessages.map((msg, index) => (
+                <p key={index} className="text-sm">
+                  {msg}
+                </p>
+              ))}
             </div>
           </div>
-        )}
+        </div>
 
-        <div className="mt-4">
-          <h2 className="text-lg font-semibold mb-2">Log Messages</h2>
-          <div className="bg-gray-700 p-4 rounded-lg h-40 overflow-y-auto">
-            {logMessages.map((msg, index) => (
-              <p key={index} className="text-sm">
-                {msg}
-              </p>
-            ))}
-          </div>
+        <div className="flex justify-end space-x-4 mt-6">
+          <Button
+            onClick={startSpecificStep}
+            variant="default"
+            className="mb-4"
+            disabled={steps[selectedStep].status === "completed"}
+          >
+            Run This Step
+          </Button>
+
+          <Button
+            onClick={startSpecificStep}
+            variant="default"
+            className="mb-4"
+            disabled={selectedStep >= steps.length - 1 || loading}
+          >
+            Continue to Next Step
+          </Button>
         </div>
       </div>
     </div>
