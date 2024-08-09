@@ -67,16 +67,6 @@ export function MultiStepLoaderDemo(): JSX.Element {
     };
   }, []);
 
-  const startLoading = (): void => {
-    setLoading(true);
-    setLogMessages((prev) => [...prev, "Got request to run all steps"]);
-    axios.get(`http://localhost:4000/api/start-all?sudo=${runAsSudo}`).catch((error) => {
-      console.error("Error starting script:", error);
-      setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
-      setLoading(false);
-    });
-  };
-
   const startSpecificStep = (): void => {
     setLoading(true);
     setLogMessages((prev) => [...prev, `Got request to run step ${selectedStep + 1}: ${steps[selectedStep].text}`]);
@@ -85,6 +75,12 @@ export function MultiStepLoaderDemo(): JSX.Element {
       setLogMessages((prev) => [...prev, `Error starting script: ${error}`]);
       setLoading(false);
     });
+  };
+
+  const continueToNextStep = (): void => {
+    if (selectedStep < steps.length - 1) {
+      setSelectedStep((prev) => prev + 1);
+    }
   };
 
   return (
@@ -162,23 +158,25 @@ export function MultiStepLoaderDemo(): JSX.Element {
         </div>
 
         <div className="flex justify-end space-x-4 mt-6">
-          <Button
-            onClick={startSpecificStep}
-            variant="default"
-            className="mb-4"
-            disabled={steps[selectedStep].status === "completed"}
-          >
-            Run This Step
-          </Button>
-
-          <Button
-            onClick={startSpecificStep}
-            variant="default"
-            className="mb-4"
-            disabled={selectedStep >= steps.length - 1 || loading}
-          >
-            Continue to Next Step
-          </Button>
+          {steps[selectedStep].status === "completed" ? (
+            <Button
+              onClick={continueToNextStep}
+              variant="default"
+              className="mb-4"
+              disabled={selectedStep >= steps.length - 1}
+            >
+              Continue to Next Step
+            </Button>
+          ) : (
+            <Button
+              onClick={startSpecificStep}
+              variant="default"
+              className="mb-4"
+              disabled={loading || steps[selectedStep].status === "running"}
+            >
+              Run This Step
+            </Button>
+          )}
         </div>
       </div>
     </div>
