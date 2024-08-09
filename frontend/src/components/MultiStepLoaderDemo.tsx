@@ -5,7 +5,8 @@ import { io, Socket } from "socket.io-client";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { ScrollArea } from "./ui/scroll-area";
+import { Separator } from "./ui/separator";
 
 interface Step {
   text: string;
@@ -85,48 +86,35 @@ export function MultiStepLoaderDemo(): JSX.Element {
 
   return (
     <div className="flex h-[70vh] w-full">
-      {/* Sidebar */}
-      <div className="w-1/4 bg-gray-800 text-white p-4">
+      {/* Sidebar with Scroll Area */}
+      <ScrollArea className="w-1/4 bg-gray-800 text-white p-4">
         <h2 className="text-lg font-semibold mb-4">Steps</h2>
         <ul className="space-y-2">
           {steps.map((step, index) => (
             <li
               key={index}
               onClick={() => setSelectedStep(index)}
-              className={`flex items-center p-2 cursor-pointer rounded-lg ${
-                selectedStep === index ? "bg-gray-600" : "hover:bg-gray-700"
-              } transition duration-300`}
+              className={`flex items-center cursor-pointer rounded-lg transition duration-300 ${
+                selectedStep === index ? "text-blue-500" : "text-gray-400"
+              }`}
             >
               <span
-                className={`mr-2 h-2 w-2 rounded-full ${
+                className={`h-2 w-2 rounded-full ${
                   step.status === "completed"
                     ? "bg-green-500"
                     : step.status === "running"
                     ? "bg-yellow-500"
-                    : step.status === "failed"
-                    ? "bg-red-500"
+                    : selectedStep === index
+                    ? "bg-blue-500"
                     : "bg-gray-400"
                 }`}
               />
+              <Separator className={`mx-2 h-px flex-1 ${selectedStep > index ? "bg-green-500" : "bg-gray-400"}`} />
               <span>{step.text}</span>
-              <Badge
-                variant={
-                  step.status === "completed"
-                    ? "success"
-                    : step.status === "running"
-                    ? "secondary"
-                    : step.status === "failed"
-                    ? "destructive"
-                    : "default"
-                }
-                className="ml-auto"
-              >
-                {step.status}
-              </Badge>
             </li>
           ))}
         </ul>
-      </div>
+      </ScrollArea>
 
       {/* Main Content Area */}
       <div className="w-3/4 bg-gray-900 text-white p-6 flex flex-col justify-between">
